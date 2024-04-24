@@ -3,6 +3,7 @@ package com.ocorteiz.apiscreenmatch.main;
 import com.ocorteiz.apiscreenmatch.model.DadosEpisodio;
 import com.ocorteiz.apiscreenmatch.model.DadosSerie;
 import com.ocorteiz.apiscreenmatch.model.DadosTemporada;
+import com.ocorteiz.apiscreenmatch.model.Episodio;
 import com.ocorteiz.apiscreenmatch.service.ConsumirApi;
 import com.ocorteiz.apiscreenmatch.service.Converterdados;
 
@@ -28,26 +29,34 @@ public class Principal {
         DadosSerie dadosSerie = converterdados.obterDados(json, DadosSerie.class);
         System.out.println(dadosSerie + "\n");
 
-        List<DadosTemporada> temporadaList = new ArrayList<>();
+        List<DadosTemporada> dadosTemporadaList = new ArrayList<>();
 
         for (int i = 1; i <= dadosSerie.totalTemporadas(); i++) {
             json = consumirApi.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + "&season=" + i + API_KEY);
             DadosTemporada dadosTemporada = converterdados.obterDados(json, DadosTemporada.class);
-            temporadaList.add(dadosTemporada);
+            dadosTemporadaList.add(dadosTemporada);
         }
 
-        temporadaList.forEach(t -> t.episodios().forEach(e -> System.out.println(e.titulo())));
+        dadosTemporadaList.forEach(t -> t.episodios().forEach(e -> System.out.println(e.titulo())));
 
-        List<DadosEpisodio> episodioList = temporadaList.stream()
+        List<DadosEpisodio> dadosEpisodioList = dadosTemporadaList.stream()
                 .flatMap(t -> t.episodios().stream())
                 .collect(Collectors.toList());
 
         System.out.println("\nTOP 5 EPISODIOS:");
-        episodioList.stream()
+        dadosEpisodioList.stream()
                 .filter(e -> !e.avaliacao().equalsIgnoreCase("N/A"))
                 .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
-                .limit(5)
-                .forEach(System.out::println);
+                .limit(5);
+
+        List<Episodio> episodioList = dadosTemporadaList.stream()
+                .flatMap(temporada -> temporada.episodios().stream()
+                        .map(dadosEpisodio -> new Episodio(temporada.numero(), dadosEpisodio))
+                )
+                .sorted(Comparator.comparing(Episodio::getAvaliacao).reversed())
+                .collect(Collectors.toList());
+
+        episodioList.forEach(System.out::println);
     }
 
 }
