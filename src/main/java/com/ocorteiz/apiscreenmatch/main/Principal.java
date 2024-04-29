@@ -30,7 +30,7 @@ public class Principal {
 
         List<DadosTemporada> dadosTemporadaList = new ArrayList<>();
 
-        // BUSCAND TODOS EPISODIOS
+        // BUSCAND DADOS DE TODAS TEMPORADAS
 
         for (int i = 1; i <= dadosSerie.totalTemporadas(); i++) {
             json = consumirApi.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + "&season=" + i + API_KEY);
@@ -38,7 +38,7 @@ public class Principal {
             dadosTemporadaList.add(dadosTemporada);
         }
 
-//        dadosTemporadaList.forEach(t -> t.episodios().forEach(e -> System.out.println(e.titulo())));
+        // dadosTemporadaList.forEach(t -> t.episodios().forEach(e -> System.out.println(e.titulo())));
 
         // CRIANDO STREAM COM dadosEpisodie
 
@@ -54,48 +54,55 @@ public class Principal {
                 .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
                 .limit(5);
 
-        // CRIANDO STREAM COM Episodios E EXIBINDO 10 MELHORES
+        // CRIANDO STREAM COM 'Episodios'
 
         List<Episodio> episodioList = dadosTemporadaList.stream()
                 .flatMap(temporada -> temporada.episodios().stream()
                         .map(dadosEpisodio -> new Episodio(temporada.numero(), dadosEpisodio))
                 )
                 .sorted(Comparator.comparing(Episodio::getAvaliacao).reversed())
-                .limit(10)
                 .collect(Collectors.toList());
 
         episodioList.forEach(System.out::println);
 
         // BUSCANDO EPISODIOS POR ANO
 
-        System.out.println("\nDigite um ano de busca:");
-        var ano = leitura.nextInt();
-        leitura.nextLine();
-        LocalDate buscaAno = LocalDate.of(ano, 1, 1);
-
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        episodioList.stream()
-                .filter(e -> e.getDataLancamento() != null && e.getDataLancamento().isAfter(buscaAno))
-                .forEach(e -> System.out.println(
-                        "Episodio: " + e.getTitulo() +
-                        ", Temporada: " + e.getTemporada() +
-                                ", Date de Lançamento: " + e.getDataLancamento().format(df)
-                ));
+//        System.out.println("\nDigite um ano de busca:");
+//        var ano = leitura.nextInt();
+//        leitura.nextLine();
+//        LocalDate buscaAno = LocalDate.of(ano, 1, 1);
+//
+//        DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+//        episodioList.stream()
+//                .filter(e -> e.getDataLancamento() != null && e.getDataLancamento().isAfter(buscaAno))
+//                .forEach(e -> System.out.println(
+//                        "Episodio: " + e.getTitulo() +
+//                        ", Temporada: " + e.getTemporada() +
+//                                ", Date de Lançamento: " + e.getDataLancamento().format(df)
+//                ));
 
         //  BUSCANDO EPISODIOS POR TEXTO
 
-        System.out.println("\nDigite um nome de episodio para buscar: ");
-        var buscaTexto = leitura.nextLine();
+//        System.out.println("\nDigite um nome de episodio para buscar: ");
+//        var buscaTexto = leitura.nextLine();
+//
+//        Optional<Episodio> resultadoBuscatexto = episodioList.stream()
+//                .filter(e -> e.getTitulo().toUpperCase().contains(buscaTexto.toUpperCase()))
+//                .findFirst();
+//        if (resultadoBuscatexto.isPresent()) {
+//            System.out.println("Episodio encontrado: ");
+//            System.out.println(resultadoBuscatexto.get().getTitulo());
+//        } else {
+//            System.out.println("Episodio não encontrado");
+//        }
 
-        Optional<Episodio> resultadoBuscatexto = episodioList.stream()
-                .filter(e -> e.getTitulo().toUpperCase().contains(buscaTexto.toUpperCase()))
-                .findFirst();
-        if (resultadoBuscatexto.isPresent()) {
-            System.out.println("Episodio encontrado: ");
-            System.out.println(resultadoBuscatexto.get().getTitulo());
-        } else {
-            System.out.println("Episodio não encontrado");
-        }
+        // CRIANDO MAPA DE DADOS PO TEMPORADA
+
+        Map<Integer, Double> avaliacaoPorTemporada = episodioList.stream()
+                .filter(e -> e.getAvaliacao() > 0)
+                .collect(Collectors.groupingBy(Episodio::getTemporada,
+                        Collectors.averagingDouble(Episodio::getAvaliacao)));
+        System.out.println("\n"+avaliacaoPorTemporada);
     }
 
 }
