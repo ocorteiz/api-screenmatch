@@ -23,7 +23,9 @@ public class ConsumirApi {
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return response.body();
+
+        String json = response.body();
+        return json;
     }
 
 }
