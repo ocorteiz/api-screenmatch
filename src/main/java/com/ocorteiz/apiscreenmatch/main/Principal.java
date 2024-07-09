@@ -7,8 +7,6 @@ import com.ocorteiz.apiscreenmatch.model.Episodio;
 import com.ocorteiz.apiscreenmatch.service.ConsumirApi;
 import com.ocorteiz.apiscreenmatch.service.Converterdados;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
